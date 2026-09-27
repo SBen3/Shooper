@@ -2,10 +2,28 @@
 
 import { useStoreModal } from "@/hooks/use-store-modal";
 import { Modal } from "../ui/modal";
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+const formSchema = z.object({
+  name: z.string().min(1),
+});
 
 export const StoreModal = () => {
   const storeModal = useStoreModal();
-
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+    },
+  });
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log(values);
+  };
   return (
     <Modal
       title="Store"
@@ -14,7 +32,27 @@ export const StoreModal = () => {
       onClose={storeModal.onClose}
     >
       <div>
-        <p>Store modal content goes here.</p>
+        <div>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <Field data-invalid={!!form.formState.errors.name}>
+              <FieldLabel htmlFor="name">Name</FieldLabel>
+              <Input
+                id="Name"
+                placeholder="E-commerce"
+                {...form.register("name")}
+              />
+              {form.formState.errors.name && (
+                <FieldDescription>
+                  {form.formState.errors.name.message}
+                </FieldDescription>
+              )}
+            </Field>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button variant="outline" onClick={storeModal.onClose}>Cancel</Button>
+              <Button type="submit">Continue</Button>
+            </div>
+          </form>
+        </div>
       </div>
     </Modal>
   );
